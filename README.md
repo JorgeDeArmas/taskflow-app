@@ -1,108 +1,192 @@
-# 🎯 TaskFlow - iOS Task Management App
+# TaskFlow
 
-## ✅ Project Status: Core Foundation Complete
+<div align="center">
+  <h3>iOS-inspired Task Management App</h3>
+  <p>Built with React Native, Expo, and Supabase</p>
+</div>
 
-A native iOS-inspired to-do list app with glassmorphism design, real-time sync, and offline support.
+## 🚀 Features
 
----
+- ✅ **Complete CRUD Operations** - Create, Read, Update, and Delete tasks
+- 🎨 **Glassmorphism UI** - Beautiful iOS-inspired design with glassmorphism effects
+- ⚡ **Real-time Sync** - Instant updates across all devices using Supabase Realtime
+- 🔐 **Authentication** - Secure signup and login with Supabase Auth
+- 📅 **Due Dates** - Set and edit due dates with native date picker
+- 🚩 **Priority Flags** - Mark important tasks with flags
+- ✨ **Optimistic Updates** - Instant UI feedback with background database sync
+- 🎯 **Hide Completed Tasks** - iOS Reminders behavior - completed tasks disappear automatically
+- 📱 **Native Feel** - Smooth animations and iOS-style interactions
 
-## 📦 What's Built
+## 🛠️ Tech Stack
 
-### ✅ Infrastructure
-- Dependencies installed (Supabase, Zustand, FlashList, expo-blur, date-fns)
-- app.json configured (iOS settings, notifications, deep linking)
-- TypeScript types for all data models
-- Environment template (.env.example)
+- **Frontend**: React Native + Expo SDK 54
+- **Backend**: Supabase (PostgreSQL + Auth + Realtime)
+- **State Management**: Zustand with persistence
+- **Navigation**: Expo Router (file-based routing)
+- **UI Components**: Custom glassmorphism components
+- **TypeScript**: Full type safety
 
-### ✅ Database (Supabase)
-- Complete schema in `supabase-schema.md`
-- Tables: lists, tasks, user_settings
-- Row Level Security policies
-- Real-time subscriptions enabled
-- Auto-update triggers
+## 📦 Installation
 
-### ✅ State Management
-- **Auth Store**: Login, signup, Apple Sign In, session persistence
-- **Task Store**: CRUD, filtering, sorting, recurring tasks, real-time sync
-- **List Store**: Custom lists, reordering, real-time sync
+### Prerequisites
 
-### ✅ UI Components
-- Glass Card, Button, Input (with blur effects)
-- iOS-inspired theme (colors, typography, spacing)
+- Node.js 20.x or later
+- Expo Go app (for testing on device)
+- Supabase account
 
-### ✅ Screens
-- Login & Sign Up (auth/login.tsx, auth/signup.tsx)
-- Task List with FlashList (app/(tabs)/index.tsx)
+### Setup
 
----
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/JorgeDeArmas/taskflow-app.git
+   cd taskflow-app
+   ```
 
-## 🚧 TODO: Critical Features
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-1. **Root Layout** (app/_layout.tsx) - Auth protection, initialize stores
-2. **Add Task Modal** - Quick task creation
-3. **Task Detail Screen** (app/task-detail/[id].tsx) - Full edit view
-4. **Lists Management** (app/(tabs)/explore.tsx) - CRUD for custom lists
-5. **Notifications** (lib/notifications.ts) - Push reminders
+3. **Configure Supabase**
+   
+   Create a `.env` file in the root directory:
+   ```env
+   EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
+   EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+   ```
 
----
+4. **Set up database**
+   
+   Run the SQL scripts in your Supabase SQL editor:
+   - `create-tables.sql`
+   - `add-user-settings-trigger.sql`
 
-## 🛠️ Setup
+5. **Disable email confirmation** (for development)
+   
+   In Supabase Dashboard:
+   - Go to Authentication → Settings
+   - Disable "Enable email confirmations"
 
-### 1. Supabase
+6. **Start the app**
+   ```bash
+   npm start
+   ```
+
+## 📱 Usage
+
+### Running the App
 
 ```bash
-# Create project at https://supabase.com
-cp .env.example .env
-# Add your EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY
-```
-
-### 2. Database
-
-Run all SQL from `supabase-schema.md` in Supabase SQL Editor
-
-### 3. Run
-
-```bash
-npm install
+# Start Expo development server
 npm start
-npm run ios  # or npm run android
+
+# Scan QR code with Expo Go app (iOS/Android)
+# Or press 'a' for Android emulator
+# Or press 'i' for iOS simulator
 ```
 
----
+### Key Features
 
-## 📁 Structure
+#### Task Management
+- **Create**: Tap the blue + button to add a new task
+- **Edit**: Tap any task to edit its details
+- **Complete**: Tap the checkbox to mark as done (auto-hides)
+- **Delete**: Open task detail → Delete Task button
+
+#### Task Properties
+- Title (required)
+- Notes (optional)
+- Due Date with inline calendar picker
+- Priority Flag for important tasks
+
+#### Show/Hide Completed
+- Tap "Show Completed" / "Hide Completed" button in header
+- Completed tasks are hidden by default (iOS behavior)
+
+## 🏗️ Project Structure
 
 ```
-app/
-  (tabs)/
-    index.tsx       ✅ Task list
-    explore.tsx     🚧 Lists management
-  auth/
-    login.tsx       ✅ Login
-    signup.tsx      ✅ Sign up
-  _layout.tsx       🚧 TODO: Root layout
-components/glass/   ✅ Blur UI components
-stores/             ✅ Zustand stores
-lib/supabase.ts     ✅ Supabase client
+taskflow/
+├── app/
+│   ├── (tabs)/           # Tab navigation screens
+│   │   ├── index.tsx     # Main task list
+│   │   └── explore.tsx   # Explore/settings screen
+│   ├── auth/             # Authentication screens
+│   │   ├── login.tsx
+│   │   └── signup.tsx
+│   ├── task-detail/      # Task editing screen
+│   │   └── [id].tsx
+│   ├── modal.tsx         # Add task modal
+│   └── _layout.tsx       # Root layout with auth
+├── components/
+│   ├── glass/            # Glassmorphism components
+│   └── ui/               # Reusable UI components
+├── stores/
+│   ├── auth-store.ts     # Authentication state
+│   ├── task-store.ts     # Task state & operations
+│   └── list-store.ts     # List management
+├── lib/
+│   └── supabase.ts       # Supabase client config
+├── types/
+│   └── index.ts          # TypeScript types
+└── constants/
+    └── theme.ts          # Colors, spacing, typography
 ```
 
+## 🔑 Key Implementation Details
+
+### Optimistic Updates
+Tasks update instantly in the UI while syncing with the database in the background. If an error occurs, changes are automatically reverted.
+
+### Real-time Sync
+All task changes are broadcast via Supabase Realtime, keeping multiple clients in sync without polling.
+
+### Performance Optimizations
+- `React.memo` for TaskItem components
+- `useCallback` for event handlers
+- FlashList for efficient list rendering
+- Tasks not persisted to AsyncStorage (reduces write overhead)
+
+### Database Schema
+- **tasks** - Task data with RLS policies
+- **lists** - Custom list organization
+- **user_settings** - User preferences
+- All tables have `updated_at` triggers
+
+## 🚧 Roadmap
+
+- [ ] List management (create custom lists)
+- [ ] Recurring tasks
+- [ ] Task search and filtering
+- [ ] Subtasks/checklists
+- [ ] Task attachments
+- [ ] Collaboration features
+- [ ] Dark mode improvements
+- [ ] Web version
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 👤 Author
+
+**Jorge De Armas**
+- GitHub: [@JorgeDeArmas](https://github.com/JorgeDeArmas)
+- Email: jorgedearmas86@gmail.com
+
+## 🙏 Acknowledgments
+
+- Inspired by iOS Reminders app
+- Built with [Expo](https://expo.dev)
+- Powered by [Supabase](https://supabase.com)
+
 ---
 
-## 🎨 Design
-
-- **Colors**: iOS system colors (#007AFF primary)
-- **Glass**: rgba blur with 0.7-0.85 opacity
-- **Typography**: SF Pro scale (34px → 11px)
-- **Spacing**: 4px base unit (xs:4, sm:8, md:16, lg:24, xl:32, xxl:48)
-
----
-
-## 📚 Docs
-
-- [Setup Guide](./SETUP.md) - Detailed setup instructions
-- [Database Schema](./supabase-schema.md) - SQL schema
-- [Copilot Instructions](./github/copilot-instructions.md) - Project standards
-
----
-
-**Next**: Implement root layout with auth protection, then add task creation modal
+<div align="center">
+  Made with ❤️ by Jorge De Armas
+</div>
