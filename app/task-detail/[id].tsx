@@ -4,8 +4,8 @@ import { useTaskStore } from "@/stores/task-store";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { format } from "date-fns";
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -19,19 +19,76 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-export default function AddTaskModal() {
+export default function TaskDetailScreen() {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === "dark";
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { addTask } = useTaskStore();
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { tasks, updateTask, deleteTask } = useTaskStore();
 
-  const [title, setTitle] = useState("");
-  const [notes, setNotes] = useState("");
-  const [dueDate, setDueDate] = useState<Date | null>(null);
+  const task = tasks.find((t) => t.id === id);
+
+  const [title, setTitle] = useState(task?.title || "");
+  const [notes, setNotes] = useState(task?.notes || "");
+  const [dueDate, setDueDate] = useState<Date | null>(
+    task?.due_date ? new Date(task.due_date) : null
+  );
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [isFlagged, setIsFlagged] = useState(false);
+  const [isFlagged, setIsFlagged] = useState(task?.is_flagged || false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (task) {
+      setTitle(task.title);
+      setNotes(task.notes || "");
+      setDueDate(task.due_date ? new Date(task.due_date) : null);
+      setIsFlagged(task.is_flagged);
+    }
+  }, [task]);
+
+  if (!task) {
+    return (
+      <View
+        style={[
+          styles.container,
+          {
+            backgroundColor: isDark
+              ? Colors.dark.background
+              : Colors.light.background,
+          },
+        ]}
+      >
+        <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.headerButton}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons
+              name="chevron-back"
+              size={28}
+              color={isDark ? Colors.dark.primary : Colors.light.primary}
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.centerContent}>
+          <Text
+            style={[
+              styles.errorText,
+              {
+                color: isDark
+                  ? Colors.dark.textSecondary
+                  : Colors.light.textSecondary,
+              },
+            ]}
+          >
+            Task not found
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -40,20 +97,28 @@ export default function AddTaskModal() {
     }
 
     setIsSubmitting(true);
-    const task = await addTask({
+    await updateTask(id!, {
       title: title.trim(),
-      notes: notes.trim() || undefined,
-      due_date: dueDate?.toISOString() || undefined,
+      notes: notes.trim() || null,
+      due_date: dueDate?.toISOString() || null,
       is_flagged: isFlagged,
     });
-
     setIsSubmitting(false);
+    router.back();
+  };
 
-    if (!task) {
-      Alert.alert("Error", "Failed to create task. Please try again.");
-    } else {
-      router.back();
-    }
+  const handleDelete = () => {
+    Alert.alert("Delete Task", "Are you sure you want to delete this task?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          await deleteTask(id!);
+          router.back();
+        },
+      },
+    ]);
   };
 
   return (
@@ -74,16 +139,11 @@ export default function AddTaskModal() {
           style={styles.headerButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Text
-            style={[
-              styles.headerButtonText,
-              {
-                color: isDark ? Colors.dark.primary : Colors.light.primary,
-              },
-            ]}
-          >
-            Cancel
-          </Text>
+          <Ionicons
+            name="chevron-back"
+            size={28}
+            color={isDark ? Colors.dark.primary : Colors.light.primary}
+          />
         </TouchableOpacity>
 
         <Text
@@ -96,7 +156,7 @@ export default function AddTaskModal() {
             },
           ]}
         >
-          New Task
+          Edit Task
         </Text>
 
         <TouchableOpacity
@@ -120,7 +180,7 @@ export default function AddTaskModal() {
               },
             ]}
           >
-            {isSubmitting ? "Saving..." : "Add"}
+            {isSubmitting ? "Saving..." : "Done"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -335,18 +395,35 @@ export default function AddTaskModal() {
           />
         )}
 
-        <Text
+        {/* Delete Button */}
+        <TouchableOpacity
+          onPress={handleDelete}
           style={[
-            styles.infoText,
+            styles.deleteButton,
             {
-              color: isDark
-                ? Colors.dark.textSecondary
-                : Colors.light.textSecondary,
+              backgroundColor: isDark
+                ? "rgba(255, 59, 48, 0.1)"
+                : "rgba(255, 59, 48, 0.1)",
+              borderColor: isDark ? Colors.dark.error : Colors.light.error,
             },
           ]}
         >
-          Tip: Swipe down or tap Cancel to dismiss
-        </Text>
+          <Ionicons
+            name="trash-outline"
+            size={20}
+            color={isDark ? Colors.dark.error : Colors.light.error}
+          />
+          <Text
+            style={[
+              styles.deleteButtonText,
+              {
+                color: isDark ? Colors.dark.error : Colors.light.error,
+              },
+            ]}
+          >
+            Delete Task
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -360,10 +437,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "rgba(0,0,0,0.1)",
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
   },
   headerButton: {
     minWidth: 80,
@@ -379,6 +456,14 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: Spacing.lg,
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    ...Typography.body,
   },
   inputContainer: {
     padding: Spacing.md,
@@ -425,9 +510,19 @@ const styles = StyleSheet.create({
     ...Typography.body,
     flex: 1,
   },
-  infoText: {
-    ...Typography.caption1,
-    textAlign: "center",
+  deleteButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Spacing.md,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: Spacing.sm,
     marginTop: Spacing.xl,
+    marginBottom: Spacing.xxl,
+  },
+  deleteButtonText: {
+    ...Typography.body,
+    fontWeight: "600",
   },
 });

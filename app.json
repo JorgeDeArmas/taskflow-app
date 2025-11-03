@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "taskflow",
+    "name": "TaskFlow",
     "slug": "taskflow",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -9,7 +9,14 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.pixelab.taskflow",
+      "infoPlist": {
+        "UIBackgroundModes": ["remote-notification"],
+        "NSFaceIDUsageDescription": "Use Face ID to securely access your tasks",
+        "NSUserNotificationsUsageDescription": "Allow TaskFlow to send you reminders for your tasks"
+      },
+      "associatedDomains": ["applinks:taskflow.app"]
     },
     "android": {
       "adaptiveIcon": {
@@ -38,11 +45,26 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#007AFF",
+          "sounds": ["./assets/sounds/notification.wav"]
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4dea2b8c-56c2-4692-81c0-145153ebcd51"
+      }
+    },
+    "owner": "pixelab-ai"
   }
 }

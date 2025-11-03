@@ -1,0 +1,261 @@
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  RefreshControl,
+  Alert,
+} from 'react-native';
+import { FlashList } from '@shopify/flash-list';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { GlassCard } from '@/components/glass/glass-card';
+import { GlassButton } from '@/components/glass/glass-button';
+import { useTaskStore } from '@/stores/task-store';
+import { useAuthStore } from '@/stores/auth-store';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors, Typography, Spacing, BorderRadius } from '@/constants/theme';
+import { format, isToday, isTomorrow, isPast } from 'date-fns';
+import type { Task } from '@/types';
+
+function TaskItem({ task, onToggleComplete, onDelete }: {
+  task: Task;
+  onToggleComplete: () => void;
+  onDelete: () => void;
+}) {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const router = useRouter();
+
+  const getDueDateText = () => {
+    if (!task.due_date) return null;
+    const date = new Date(task.due_date);
+    
+    if (isToday(date)) return 'Today';
+    if (isTomorrow(date)) return 'Tomorrow';
+    return format(date, 'MMM d');
+  };
+
+  const isOverdue = task.due_date && isPast(new Date(task.due_date)) && !task.is_completed;
+
+  return (
+    <View style={styles.taskItemContainer}>
+      <GlassCard style={styles.taskCard} noPadding>
+        <View style={styles.taskContent}>
+          <TouchableOpacity
+            onPress={onToggleComplete}
+            style={[
+              styles.checkbox,
+              {
+                borderColor: task.is_flagged
+                  ? (isDark ? Colors.dark.accent : Colors.light.accent)
+                  : (isDark ? Colors.dark.glassBorder : Colors.light.glassBorder),
+                backgroundColor: task.is_completed
+                  ? (isDark ? Colors.dark.primary : Colors.light.primary)
+                  : 'transparent',
+              },
+            ]}
+          >
+            {task.is_completed && (
+              <Ionicons
+                name="checkmark"
+                size={16}
+                color={isDark ? Colors.dark.textPrimary : Colors.light.surface}
+              />
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.taskInfo}>
+            <Text
+              style={[
+                styles.taskTitle,
+                {
+                  color: isDark ? Colors.dark.textPrimary : Colors.light.textPrimary,
+                  textDecorationLine: task.is_completed ? 'line-through' : 'none',
+                  opacity: task.is_completed ? 0.5 : 1,
+                },
+              ]}
+              numberOfLines={1}
+            >
+              {task.title}
+            </Text>
+            
+            {(task.due_date || task.notes) && (
+              <View style={styles.taskMeta}>
+                {task.due_date && (
+                  <Text
+                    style={[
+                      styles.dueDate,
+                      {
+                        color: isOverdue
+                          ? (isDark ? Colors.dark.error : Colors.light.error)
+                          : (isDark ? Colors.dark.textSecondary : Colors.light.textSecondary),
+                      },
+                    ]}
+                  >
+                    {getDueDateText()}
+                  </Text>
+                )}
+                {task.notes && (
+                  <Ionicons
+                    name="document-text-outline"
+                    size={14}
+                    color={isDark ? Colors.dark.textSecondary : Colors.light.textSecondary}
+                  />
+                )}
+              </View>
+            )}
+          </View>
+
+          {task.is_flagged && (
+            <Ionicons
+              name="flag"
+              size={20}
+              color={isDark ? Colors.dark.accent : Colors.light.accent}
+            />
+          )}
+        </View>
+      </GlassCard>
+    </View>
+  );
+}
+
+export default function HomeScreen() {
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
+  const router = useRouter();
+  const { user } = useAuthStore();
+  const {
+    tasks,
+    fetchTasks,
+    toggleComplete,
+    deleteTask,
+    subscribeToTasks,
+    getFilteredTasks,
+  } = useTaskStore();
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      fetchTasks();
+      const unsubscribe = subscribeToTasks();
+      return () => unsubscribe();
+    }
+  }, [user]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchTasks();
+    setRefreshing(false);
+  };
+
+  const handleToggleComplete = async (taskId: string) => {
+    await toggleComplete(taskId);
+  };
+
+  const handleDeleteTask = (taskId: string, taskTitle: string) => {
+    Alert.alert(
+      'Delete Task',
+      `Are you sure you want to delete "${taskTitle}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => deleteTask(taskId),
+        },
+      ]
+    );
+  };
+
+  const filteredTasks = getFilteredTasks();
+
+  if (!user) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { backgroundColor: isDark ? Colors.dark.background : Colors.light.background },
+        ]}
+      >
+      <ThemedView style={styles.titleContainer}>
+        <ThemedText type="title">Welcome!</ThemedText>
+        <HelloWave />
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
+        <ThemedText>
+          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
+          Press{' '}
+          <ThemedText type="defaultSemiBold">
+            {Platform.select({
+              ios: 'cmd + d',
+              android: 'cmd + m',
+              web: 'F12',
+            })}
+          </ThemedText>{' '}
+          to open developer tools.
+        </ThemedText>
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <Link href="/modal">
+          <Link.Trigger>
+            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
+          </Link.Trigger>
+          <Link.Preview />
+          <Link.Menu>
+            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
+            <Link.MenuAction
+              title="Share"
+              icon="square.and.arrow.up"
+              onPress={() => alert('Share pressed')}
+            />
+            <Link.Menu title="More" icon="ellipsis">
+              <Link.MenuAction
+                title="Delete"
+                icon="trash"
+                destructive
+                onPress={() => alert('Delete pressed')}
+              />
+            </Link.Menu>
+          </Link.Menu>
+        </Link>
+
+        <ThemedText>
+          {`Tap the Explore tab to learn more about what's included in this starter app.`}
+        </ThemedText>
+      </ThemedView>
+      <ThemedView style={styles.stepContainer}>
+        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
+        <ThemedText>
+          {`When you're ready, run `}
+          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
+          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
+          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
+          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
+        </ThemedText>
+      </ThemedView>
+    </ParallaxScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  stepContainer: {
+    gap: 8,
+    marginBottom: 8,
+  },
+  reactLogo: {
+    height: 178,
+    width: 290,
+    bottom: 0,
+    left: 0,
+    position: 'absolute',
+  },
+});

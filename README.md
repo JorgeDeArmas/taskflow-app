@@ -1,50 +1,108 @@
-# Welcome to your Expo app 👋
+# 🎯 TaskFlow - iOS Task Management App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## ✅ Project Status: Core Foundation Complete
 
-## Get started
+A native iOS-inspired to-do list app with glassmorphism design, real-time sync, and offline support.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## 📦 What's Built
 
-2. Start the app
+### ✅ Infrastructure
+- Dependencies installed (Supabase, Zustand, FlashList, expo-blur, date-fns)
+- app.json configured (iOS settings, notifications, deep linking)
+- TypeScript types for all data models
+- Environment template (.env.example)
 
-   ```bash
-   npx expo start
-   ```
+### ✅ Database (Supabase)
+- Complete schema in `supabase-schema.md`
+- Tables: lists, tasks, user_settings
+- Row Level Security policies
+- Real-time subscriptions enabled
+- Auto-update triggers
 
-In the output, you'll find options to open the app in a
+### ✅ State Management
+- **Auth Store**: Login, signup, Apple Sign In, session persistence
+- **Task Store**: CRUD, filtering, sorting, recurring tasks, real-time sync
+- **List Store**: Custom lists, reordering, real-time sync
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### ✅ UI Components
+- Glass Card, Button, Input (with blur effects)
+- iOS-inspired theme (colors, typography, spacing)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### ✅ Screens
+- Login & Sign Up (auth/login.tsx, auth/signup.tsx)
+- Task List with FlashList (app/(tabs)/index.tsx)
 
-## Get a fresh project
+---
 
-When you're ready, run:
+## 🚧 TODO: Critical Features
+
+1. **Root Layout** (app/_layout.tsx) - Auth protection, initialize stores
+2. **Add Task Modal** - Quick task creation
+3. **Task Detail Screen** (app/task-detail/[id].tsx) - Full edit view
+4. **Lists Management** (app/(tabs)/explore.tsx) - CRUD for custom lists
+5. **Notifications** (lib/notifications.ts) - Push reminders
+
+---
+
+## 🛠️ Setup
+
+### 1. Supabase
 
 ```bash
-npm run reset-project
+# Create project at https://supabase.com
+cp .env.example .env
+# Add your EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. Database
 
-## Learn more
+Run all SQL from `supabase-schema.md` in Supabase SQL Editor
 
-To learn more about developing your project with Expo, look at the following resources:
+### 3. Run
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm install
+npm start
+npm run ios  # or npm run android
+```
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+## 📁 Structure
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```
+app/
+  (tabs)/
+    index.tsx       ✅ Task list
+    explore.tsx     🚧 Lists management
+  auth/
+    login.tsx       ✅ Login
+    signup.tsx      ✅ Sign up
+  _layout.tsx       🚧 TODO: Root layout
+components/glass/   ✅ Blur UI components
+stores/             ✅ Zustand stores
+lib/supabase.ts     ✅ Supabase client
+```
+
+---
+
+## 🎨 Design
+
+- **Colors**: iOS system colors (#007AFF primary)
+- **Glass**: rgba blur with 0.7-0.85 opacity
+- **Typography**: SF Pro scale (34px → 11px)
+- **Spacing**: 4px base unit (xs:4, sm:8, md:16, lg:24, xl:32, xxl:48)
+
+---
+
+## 📚 Docs
+
+- [Setup Guide](./SETUP.md) - Detailed setup instructions
+- [Database Schema](./supabase-schema.md) - SQL schema
+- [Copilot Instructions](./github/copilot-instructions.md) - Project standards
+
+---
+
+**Next**: Implement root layout with auth protection, then add task creation modal
